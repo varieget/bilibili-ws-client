@@ -1,3 +1,4 @@
+import EventEmitter from 'events';
 import { TextEncoder, TextDecoder } from 'util';
 import WebSocket from 'ws';
 import zlib from 'zlib';
@@ -20,22 +21,17 @@ type PacketStruct = {
 };
 
 type DataPack =
-  | (PacketStruct & { op: 2; body: never })
-  | (PacketStruct & { op: 3; body: number })
-  | (PacketStruct & { op: 5; body: string })
-  | (PacketStruct & { op: 7; body: never })
-  | (PacketStruct & { op: 8; body: never });
+  | (PacketStruct & { op: 2; body: never }) // send heartbeat
+  | (PacketStruct & { op: 3; body: number }) // heartbeat reply
+  | (PacketStruct & { op: 5; body: string }) // batch message
+  | (PacketStruct & { op: 7; body: never }) // auth start
+  | (PacketStruct & { op: 8; body: string }); // authorized
 
 type Options = {
   roomId: number;
-  log(...rest: unknown[]): void;
-  notify(msgBody: {
-    ver: Ver;
-    op: Op;
-    cmd?: string;
-    body: unknown;
-    ts: number;
-  }): void;
+  enableLog?: boolean;
+  maxConnectTimes?: number;
+  delay?: number;
 };
 
 interface Client {
@@ -44,12 +40,18 @@ interface Client {
   textEncoder: TextEncoder;
 }
 
-class Client {
+class Client extends EventEmitter {
   constructor(options: Options) {
-    const MAX_CONNECT_TIMES = 10; // 最多重试次数
-    const DELAY = 15000; // 重试间隔
+    super();
 
-    this.options = Object.assign({ roomId: 1, log: console.log }, options);
+    if (!options.roomId) {
+      throw new Error('miss roomId.');
+    }
+
+    const MAX_CONNECT_TIMES = options.maxConnectTimes ?? 10; // 最多重试次数
+    const DELAY = options.delay ?? 15000; // 重试间隔
+
+    this.options = { enableLog: true, ...options };
 
     this.textDecoder = new TextDecoder('utf-8');
     this.textEncoder = new TextEncoder();
@@ -63,10 +65,10 @@ class Client {
     const ws = new WebSocket('wss://broadcastlv.chat.bilibili.com:2245/sub');
     ws.binaryType = 'arraybuffer';
 
-    const { roomId, log } = this.options;
+    const { roomId, enableLog } = this.options;
 
     ws.on('open', () => {
-      log('auth start');
+      enableLog && console.log('auth start');
 
       const token = JSON.stringify({
         roomid: roomId,
@@ -88,25 +90,34 @@ class Client {
         this.convertToObject(data);
 
       if (op !== 3 && op !== 5) {
-        log('receiveHeader:', { packetLen, headerLen, ver, op, seq, body });
+        enableLog &&
+          console.log('receiveHeader:', {
+            packetLen,
+            headerLen,
+            ver,
+            op,
+            seq,
+            body,
+          });
       }
 
       switch (op) {
         case 8:
           // 进房
+          this.emit('open', body);
+
           // send heartbeat
           heartbeatInterval = setInterval(() => {
             ws.send(this.convertToArrayBuffer('', 2));
 
-            log('send: heartbeat;');
+            enableLog && console.log('send: heartbeat;');
           }, 30 * 1000);
           break;
         case 3:
           // 人气
           // heartbeat reply
-          log('receive: heartbeat;', { online: body });
+          enableLog && console.log('receive: heartbeat;', { online: body });
 
-          // callback
           this.messageReceived(ver, op, body, ts);
           break;
         case 5:
@@ -121,10 +132,8 @@ class Client {
             const headerLen = dataView.getInt16(offset + headerOffset);
             const ver = dataView.getInt16(offset + verOffset) as Ver;
 
-            // callback
             try {
               if (ver === 2) {
-                // 2020.04.10 开始全面压缩
                 const msgBody = data.slice(
                   offset + headerLen,
                   offset + packetLen
@@ -140,9 +149,10 @@ class Client {
 
               this.messageReceived(ver, op, JSON.parse(body), ts);
 
-              log('messageReceived:', { ver, body });
+              enableLog && console.log('messageReceived:', { ver, body });
             } catch (e) {
-              console.error('decode body error:', e);
+              this.emit('error', e);
+              enableLog && console.error('decode body error:', e);
             }
           }
 
@@ -151,7 +161,8 @@ class Client {
     });
 
     ws.on('close', () => {
-      log('closed');
+      enableLog && console.log('closed');
+      this.emit('close');
 
       if (heartbeatInterval) {
         clearInterval(heartbeatInterval);
@@ -161,16 +172,16 @@ class Client {
     });
 
     ws.on('error', (e) => {
-      console.error(e);
+      this.emit('error', e);
     });
 
     const reConnect = () => this.connect(--max, delay * 2);
   }
 
   messageReceived(ver: Ver, op: Op, body: unknown, ts: number) {
-    const { cmd } = body as { cmd: string };
+    const { cmd } = body as Record<string, unknown>;
 
-    this.options.notify?.({ ver, op, ...(cmd ? { cmd } : {}), body, ts });
+    this.emit('message', { ver, op, ...(cmd ? { cmd } : {}), body, ts });
   }
 
   convertToObject(data: ArrayBuffer) {

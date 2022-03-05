@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import EventEmitter from 'events';
 import { TextEncoder, TextDecoder } from 'util';
 declare type Ver = 1 | 2;
 declare type Op = 2 | 3 | 5 | 7 | 8;
@@ -22,25 +23,20 @@ declare type DataPack = (PacketStruct & {
     body: never;
 }) | (PacketStruct & {
     op: 8;
-    body: never;
+    body: string;
 });
 declare type Options = {
     roomId: number;
-    log(...rest: unknown[]): void;
-    notify(msgBody: {
-        ver: Ver;
-        op: Op;
-        cmd?: string;
-        body: unknown;
-        ts: number;
-    }): void;
+    enableLog?: boolean;
+    maxConnectTimes?: number;
+    delay?: number;
 };
 interface Client {
     options: Options;
     textDecoder: TextDecoder;
     textEncoder: TextEncoder;
 }
-declare class Client {
+declare class Client extends EventEmitter {
     constructor(options: Options);
     connect(max: number, delay: number): void;
     messageReceived(ver: Ver, op: Op, body: unknown, ts: number): void;
