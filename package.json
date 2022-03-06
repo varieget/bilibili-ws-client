@@ -15,7 +15,9 @@
     "url": "git+https://github.com/varieget/bilibili-ws-client.git"
   },
   "keywords": [
-    "bilibili"
+    "bilibili",
+    "websocket",
+    "bilibili-live"
   ],
   "author": "varieget",
   "license": "MIT",
