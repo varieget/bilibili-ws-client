@@ -17,7 +17,8 @@ npm install bilibili-ws-client
 ```js
 const Client = require('bilibili-ws-client');
 
-const sub = new Client({ roomId: 1 });
+// const sub = new Client(1);
+const sub = new Client(1, false, 10, 15000);
 
 sub.on('open', () => {
   // ...
@@ -64,11 +65,9 @@ sub.on('error', (err) => {
 ```js
 import Client from 'bilibili-ws-client';
 
-const sub = new Client({ roomId: 1 });
+const sub = new Client(1);
 // ...
 ```
-
-### 在浏览器使用
 
 ## 开发
 
