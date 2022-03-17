@@ -18,17 +18,25 @@ class Client extends EventEmitter implements SubClient {
   textDecoder = new TextDecoder('utf-8');
   textEncoder = new TextEncoder();
 
-  constructor(options: Options) {
+  constructor(roomId: number);
+  constructor(roomId: number, enableLog?: boolean);
+  constructor(roomId: number, enableLog?: boolean, maxConnectTimes?: number);
+  constructor(
+    roomId: number,
+    enableLog?: boolean,
+    maxConnectTimes?: number,
+    delay?: number
+  ) {
     super();
 
-    if (!options.roomId) {
+    if (!roomId) {
       throw new Error('miss roomId.');
     }
 
-    const MAX_CONNECT_TIMES = options.maxConnectTimes ?? 10; // 最多重试次数
-    const DELAY = options.delay ?? 15000; // 重试间隔
+    const MAX_CONNECT_TIMES = maxConnectTimes ?? 10; // 最多重试次数
+    const DELAY = delay ?? 15000; // 重试间隔
 
-    this.options = { enableLog: true, ...options };
+    this.options = { roomId, enableLog };
 
     this.connect(MAX_CONNECT_TIMES, DELAY);
   }
@@ -121,7 +129,7 @@ class Client extends EventEmitter implements SubClient {
                 );
               }
 
-              this.messageReceived(ver, op, JSON.parse(body), ts);
+              this.messageReceived(ver, op, body, ts);
 
               enableLog && console.log('messageReceived:', { ver, body });
             } catch (e) {
@@ -152,8 +160,11 @@ class Client extends EventEmitter implements SubClient {
     const reConnect = () => this.connect(--max, delay * 2);
   }
 
-  messageReceived(ver: Ver, op: Op, body: unknown, ts: number) {
-    const { cmd } = body as Record<string, unknown>;
+  messageReceived(ver: Ver, op: Op, body: string | number, ts: number) {
+    let cmd;
+    if (typeof body === 'string') {
+      ({ cmd } = JSON.parse(body) as Record<string, unknown>);
+    }
 
     this.emit('message', { ver, op, ...(cmd ? { cmd } : {}), body, ts });
   }

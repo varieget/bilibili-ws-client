@@ -20,8 +20,6 @@ export type DataPack =
 export type Options = {
   roomId: number;
   enableLog?: boolean;
-  maxConnectTimes?: number;
-  delay?: number;
 };
 
 export interface SubClient {

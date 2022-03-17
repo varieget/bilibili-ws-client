@@ -27,8 +27,6 @@ export declare type DataPack = (PacketStruct & {
 export declare type Options = {
     roomId: number;
     enableLog?: boolean;
-    maxConnectTimes?: number;
-    delay?: number;
 };
 export interface SubClient {
     options: Options;
