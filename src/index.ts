@@ -41,7 +41,7 @@ class Client extends EventEmitter implements SubClient {
     this.connect(MAX_CONNECT_TIMES, DELAY);
   }
 
-  connect(max: number, delay: number) {
+  private connect(max: number, delay: number) {
     if (max === 0) return;
 
     const ws = new WebSocket('wss://broadcastlv.chat.bilibili.com:2245/sub');
@@ -160,7 +160,7 @@ class Client extends EventEmitter implements SubClient {
     const reConnect = () => this.connect(--max, delay * 2);
   }
 
-  messageReceived(ver: Ver, op: Op, body: string | number, ts: number) {
+  private messageReceived(ver: Ver, op: Op, body: string | number, ts: number) {
     let cmd;
     if (typeof body === 'string') {
       ({ cmd } = JSON.parse(body) as Record<string, unknown>);
@@ -169,7 +169,7 @@ class Client extends EventEmitter implements SubClient {
     this.emit('message', { ver, op, ...(cmd ? { cmd } : {}), body, ts });
   }
 
-  convertToObject(data: ArrayBuffer) {
+  private convertToObject(data: ArrayBuffer) {
     // decode
     const dataView = new DataView(data, 0);
     const packetLen = dataView.getInt32(packetOffset);
@@ -190,7 +190,7 @@ class Client extends EventEmitter implements SubClient {
     return result;
   }
 
-  convertToArrayBuffer(token = '', op: Op) {
+  private convertToArrayBuffer(token = '', op: Op) {
     // encode
     const headerBuf = new ArrayBuffer(rawHeaderLen);
     const headerView = new DataView(headerBuf, 0);
@@ -205,7 +205,7 @@ class Client extends EventEmitter implements SubClient {
     return this.mergeArrayBuffer(headerBuf, bodyBuf);
   }
 
-  mergeArrayBuffer(ab1: ArrayBuffer, ab2: Uint8Array) {
+  private mergeArrayBuffer(ab1: ArrayBuffer, ab2: Uint8Array) {
     const u81 = new Uint8Array(ab1),
       u82 = new Uint8Array(ab2),
       res = new Uint8Array(ab1.byteLength + ab2.byteLength);
