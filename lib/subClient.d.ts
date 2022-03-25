@@ -1,14 +1,14 @@
 /// <reference types="node" />
-import type { TextEncoder, TextDecoder } from 'util';
-export declare type Ver = 1 | 2;
-export declare type Op = 2 | 3 | 5 | 7 | 8;
+import EventEmitter from 'events';
+import { TextEncoder, TextDecoder } from 'util';
+import type { Ver, Op } from './constants';
 declare type PacketStruct = {
     packetLen?: number;
     headerLen?: number;
     ver: Ver;
     seq?: number;
 };
-export declare type DataPack = (PacketStruct & {
+declare type DataPack = (PacketStruct & {
     op: 2;
     body: never;
 }) | (PacketStruct & {
@@ -24,13 +24,11 @@ export declare type DataPack = (PacketStruct & {
     op: 8;
     body: string;
 });
-export declare type Options = {
-    roomId: number;
-    enableLog?: boolean;
-};
-export interface SubClient {
-    options: Options;
-    textDecoder: TextDecoder;
-    textEncoder: TextEncoder;
+declare class SubClient extends EventEmitter {
+    protected textDecoder: TextDecoder;
+    protected textEncoder: TextEncoder;
+    protected convertToObject(data: ArrayBuffer): DataPack;
+    protected convertToArrayBuffer(token: string | undefined, op: Op): ArrayBufferLike;
+    private mergeArrayBuffer;
 }
-export {};
+export default SubClient;

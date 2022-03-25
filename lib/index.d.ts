@@ -1,7 +1,5 @@
-/// <reference types="node" />
-import EventEmitter from 'events';
-import { TextEncoder, TextDecoder } from 'util';
-import type { Ver, Op, Options, SubClient } from './subClient';
+import type { Ver, Op } from './constants';
+import SubClient from './subClient';
 interface Client {
     on(event: 'close', listener: (this: Client) => void): this;
     on(event: 'error', listener: (this: Client, err: Error) => void): this;
@@ -54,17 +52,39 @@ interface Client {
     }) => void): this;
     removeListener(event: 'open', listener: (this: Client, body: string) => void): this;
 }
-declare class Client extends EventEmitter implements SubClient {
-    options: Options;
-    textDecoder: TextDecoder;
-    textEncoder: TextEncoder;
+declare class Client extends SubClient {
+    private options;
+    /**
+     * 直播客户端
+     * @constructor
+     * @param {number} roomId - 房间号
+     */
     constructor(roomId: number);
+    /**
+     * 直播客户端
+     * @constructor
+     * @param {number} roomId - 房间号
+     * @param {boolean} enableLog - 记录日志，通过 console.log
+     */
     constructor(roomId: number, enableLog?: boolean);
+    /**
+     * 直播客户端
+     * @constructor
+     * @param {number} roomId - 房间号
+     * @param {boolean} enableLog - 记录日志，通过 console.log
+     * @param {number} maxConnectTimes - 最多重试次数，默认为 10
+     */
     constructor(roomId: number, enableLog?: boolean, maxConnectTimes?: number);
+    /**
+     * 直播客户端
+     * @constructor
+     * @param {number} roomId - 房间号
+     * @param {boolean} enableLog - 记录日志，通过 console.log
+     * @param {number} maxConnectTimes - 最多重试次数，默认为 10
+     * @param {number} delay - 重试间隔，默认为 15000
+     */
+    constructor(roomId: number, enableLog?: boolean, maxConnectTimes?: number, delay?: number);
     private connect;
     private messageReceived;
-    private convertToObject;
-    private convertToArrayBuffer;
-    private mergeArrayBuffer;
 }
 export default Client;
