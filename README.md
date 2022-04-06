@@ -6,21 +6,23 @@
 
 ## 起步
 
-`bilibili-ws-client` 支持以 `cjs` 和 `esm` 的方式使用。
+`bilibili-ws-client` 支持以 `CommonJS` 或 `ESM` 的方式使用。
 
-使用以下方式安装 `bilibili-ws-client`：
+通过以下方式安装 `bilibili-ws-client`：
 
 ```bash
-npm install bilibili-ws-client --save-dev
+npm install bilibili-ws-client
 ```
 
 或者
 
 ```bash
-yarn add bilibili-ws-client --dev
+yarn add bilibili-ws-client
 ```
 
 ### 在 node.js 使用
+
+作为 `CommonJS` 模块使用：
 
 ```js
 const Client = require('bilibili-ws-client');
@@ -68,6 +70,8 @@ sub.on('error', (err) => {
 ```
 
 ### 在前端项目使用
+
+作为 `ESM` 模块使用：
 
 ```js
 import Client from 'bilibili-ws-client';
