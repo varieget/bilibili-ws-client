@@ -5,6 +5,9 @@
   "main": "lib/index.cjs.js",
   "module": "lib/index.esm.js",
   "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "build": "rollup -c && tsc",
     "prettier": "prettier --write \"src/**/*.ts\"",
