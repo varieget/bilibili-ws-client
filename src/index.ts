@@ -292,12 +292,18 @@ class Client extends SubClient {
   }
 
   private messageReceived(ver: Ver, op: Op, body: string | number, ts: number) {
-    let cmd;
-    if (typeof body === 'string') {
-      ({ cmd } = JSON.parse(body) as Record<string, unknown>);
+    let cmd: string;
+    switch (op) {
+      case 3:
+        this.emit('message', { ver, op, body, ts });
+        break;
+      case 5:
+        ({ cmd } = JSON.parse(body as string));
+        this.emit('message', { ver, op, cmd, body, ts });
+        break;
+      default:
+        break;
     }
-
-    this.emit('message', { ver, op, ...(cmd ? { cmd } : {}), body, ts });
   }
 }
 
