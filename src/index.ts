@@ -173,7 +173,7 @@ class Client extends SubClient {
   }
 
   private connect(max: number, delay: number) {
-    if (max === 0) return;
+    if (max === 0) throw new Error('maxConnectTimes should not equal 0.');
 
     const ws = new WebSocket('wss://broadcastlv.chat.bilibili.com:2245/sub');
     ws.binaryType = 'arraybuffer';

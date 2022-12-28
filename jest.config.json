@@ -1,0 +1,5 @@
+{
+  "bail": 1,
+  "collectCoverage": true,
+  "verbose": true
+}
