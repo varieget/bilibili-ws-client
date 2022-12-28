@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import Client from '../src';
 
 describe('Client', () => {
   it('should throw if roomId not sent', () => {
-    // @ts-ignore
+    // @ts-expect-error: expect roomId not sent
     expect(() => new Client()).toThrow();
   });
 

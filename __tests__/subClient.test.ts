@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import SubClient from '../src/subClient';
 
 describe('SubClient', () => {
   it('encode', () => {
     const sub = new SubClient();
 
-    // @ts-ignore
+    // @ts-expect-error: expect test protected function
     expect(sub.convertToArrayBuffer('', 2)).toEqual(
       new Uint8Array([
         0x00, 0x00, 0x00, 0x10, 0x00, 0x10, 0x00, 0x01, 0x00, 0x00, 0x00, 0x02,
@@ -22,7 +21,7 @@ describe('SubClient', () => {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
     ]);
 
-    // @ts-ignore
+    // @ts-expect-error: expect test protected function
     expect(sub.convertToObject(Op3.buffer)).toMatchObject({
       packetLen: 20,
       headerLen: 16,
@@ -42,7 +41,7 @@ describe('SubClient', () => {
       0x30, 0x7d,
     ]);
 
-    // @ts-ignore
+    // @ts-expect-error: expect test protected function
     expect(sub.convertToObject(Op8.buffer)).toMatchObject({
       packetLen: 26,
       headerLen: 16,
