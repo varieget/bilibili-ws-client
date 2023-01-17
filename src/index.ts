@@ -112,6 +112,7 @@ interface Client {
 
 class Client extends SubClient {
   private options: Options;
+  private ws?: WebSocket;
 
   /**
    * 直播客户端
@@ -175,12 +176,12 @@ class Client extends SubClient {
   private connect(max: number, delay: number) {
     if (max === 0) throw new Error('maxConnectTimes should not equal 0.');
 
-    const ws = new WebSocket('wss://broadcastlv.chat.bilibili.com:2245/sub');
-    ws.binaryType = 'arraybuffer';
+    this.ws = new WebSocket('wss://broadcastlv.chat.bilibili.com:2245/sub');
+    this.ws.binaryType = 'arraybuffer';
 
     const { roomId, enableLog } = this.options;
 
-    ws.on('open', () => {
+    this.ws.on('open', () => {
       enableLog && console.log('auth start');
 
       const token = JSON.stringify({
@@ -189,12 +190,12 @@ class Client extends SubClient {
         platform: 'web',
       });
 
-      ws.send(this.convertToArrayBuffer(token, 7));
+      this.ws?.send(this.convertToArrayBuffer(token, 7));
     });
 
     let heartbeatInterval: NodeJS.Timer;
 
-    ws.on('message', (data: ArrayBuffer) => {
+    this.ws.on('message', (data: ArrayBuffer) => {
       const dataView = new DataView(data, 0);
 
       const ts = Math.floor(Date.now() / 1000);
@@ -221,7 +222,7 @@ class Client extends SubClient {
 
           // send heartbeat
           heartbeatInterval = setInterval(() => {
-            ws.send(this.convertToArrayBuffer('', 2));
+            this.ws?.send(this.convertToArrayBuffer('', 2));
 
             enableLog && console.log('send: heartbeat;');
           }, 30 * 1000);
@@ -273,7 +274,7 @@ class Client extends SubClient {
       }
     });
 
-    ws.on('close', () => {
+    this.ws.on('close', (code) => {
       enableLog && console.log('closed');
       this.emit('close');
 
@@ -281,10 +282,10 @@ class Client extends SubClient {
         clearInterval(heartbeatInterval);
       }
 
-      setTimeout(reConnect, delay);
+      if (code !== 1000) setTimeout(reConnect, delay);
     });
 
-    ws.on('error', (e) => {
+    this.ws.on('error', (e) => {
       this.emit('error', e);
     });
 
@@ -304,6 +305,13 @@ class Client extends SubClient {
       default:
         break;
     }
+  }
+
+  /**
+   * 断开直播客户端
+   */
+  public close() {
+    this.ws?.close(1000);
   }
 }
 

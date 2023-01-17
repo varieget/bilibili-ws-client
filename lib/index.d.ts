@@ -54,6 +54,7 @@ interface Client {
 }
 declare class Client extends SubClient {
     private options;
+    private ws?;
     /**
      * 直播客户端
      * @constructor
@@ -86,5 +87,9 @@ declare class Client extends SubClient {
     constructor(roomId: number, enableLog?: boolean, maxConnectTimes?: number, delay?: number);
     private connect;
     private messageReceived;
+    /**
+     * 断开直播客户端
+     */
+    close(): void;
 }
 export default Client;
