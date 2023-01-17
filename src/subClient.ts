@@ -1,5 +1,4 @@
 import EventEmitter from 'events';
-import { TextEncoder, TextDecoder } from 'util';
 
 import * as constants from './constants';
 import type { Ver, Op } from './constants';

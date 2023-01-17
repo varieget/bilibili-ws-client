@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
 import zlib from 'zlib';
+import { Buffer } from 'buffer';
 
 import { headerOffset, verOffset } from './constants';
 import type { Ver, Op } from './constants';
@@ -181,7 +182,7 @@ class Client extends SubClient {
 
     const { roomId, enableLog } = this.options;
 
-    this.ws.on('open', () => {
+    this.ws.onopen = () => {
       enableLog && console.log('auth start');
 
       const token = JSON.stringify({
@@ -191,11 +192,12 @@ class Client extends SubClient {
       });
 
       this.ws?.send(this.convertToArrayBuffer(token, 7));
-    });
+    };
 
     let heartbeatInterval: NodeJS.Timer;
 
-    this.ws.on('message', (data: ArrayBuffer) => {
+    this.ws.onmessage = (event) => {
+      const { data } = event as { data: ArrayBuffer };
       const dataView = new DataView(data, 0);
 
       const ts = Math.floor(Date.now() / 1000);
@@ -252,7 +254,7 @@ class Client extends SubClient {
                   offset + headerLen,
                   offset + packetLen
                 );
-                const bufBody = zlib.inflateSync(new Uint8Array(msgBody));
+                const bufBody = zlib.inflateSync(Buffer.from(msgBody));
 
                 body = this.convertToObject(bufBody.buffer).body as string;
               } else {
@@ -272,9 +274,9 @@ class Client extends SubClient {
 
           break;
       }
-    });
+    };
 
-    this.ws.on('close', (code) => {
+    this.ws.onclose = ({ code }) => {
       enableLog && console.log('closed');
       this.emit('close');
 
@@ -283,11 +285,11 @@ class Client extends SubClient {
       }
 
       if (code !== 1000) setTimeout(reConnect, delay);
-    });
+    };
 
-    this.ws.on('error', (e) => {
+    this.ws.onerror = (e) => {
       this.emit('error', e);
-    });
+    };
 
     const reConnect = () => this.connect(--max, delay * 2);
   }

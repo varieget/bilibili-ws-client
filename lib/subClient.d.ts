@@ -1,6 +1,5 @@
 /// <reference types="node" />
 import EventEmitter from 'events';
-import { TextEncoder, TextDecoder } from 'util';
 import type { Ver, Op } from './constants';
 declare type PacketStruct = {
     packetLen?: number;
