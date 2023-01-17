@@ -8,7 +8,49 @@
 
 `bilibili-ws-client` 支持以 `CommonJS` 或 `ESM` 的方式使用。
 
-通过以下方式安装 `bilibili-ws-client`：
+也支持从 HTML 文件和 script 标签开始。
+
+### 在网页中添加 `bilibili-ws-client`
+
+将 js 添加到 HTML 中，且无需安装，即可立即开始使用。
+
+添加 script 标签，应该如下所示：
+
+```html
+<script src="https://unpkg.com/bilibili-ws-client/lib/index.umd.js"></script>
+<script>
+  const sub = new Client(1);
+
+  sub.on('open', () => {
+    // ...
+    console.log('authorized');
+  });
+
+  sub.on('message', ({ ver, op, cmd, body, ts }) => {
+    if (op === 3) {
+      console.log('online: ' + body);
+    } else if (op === 5) {
+      switch (cmd) {
+        case 'LIVE':
+          // 开播
+          // ...
+          break;
+        case 'PREPARING':
+          // 闲置（下播）
+          // ...
+          break;
+        case 'DANMU_MSG':
+          console.log(body);
+          break;
+        default:
+          break;
+      }
+    }
+  });
+</script>
+```
+
+### 通过以下方式安装 `bilibili-ws-client`
 
 ```bash
 npm install bilibili-ws-client
