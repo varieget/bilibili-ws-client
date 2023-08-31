@@ -1,4 +1,4 @@
-import type { Ver, Op } from './constants';
+import type { Token, Ver, Op } from './constants';
 import SubClient from './subClient';
 interface Client {
     on(event: 'close', listener: (this: Client) => void): this;
@@ -58,33 +58,39 @@ declare class Client extends SubClient {
     /**
      * 直播客户端
      * @constructor
-     * @param {number} roomId - 房间号
+     * @param {Token} token - 房间号或令牌
      */
-    constructor(roomId: number);
+    constructor(token: Token);
     /**
      * 直播客户端
      * @constructor
-     * @param {number} roomId - 房间号
+     * @param {Token} token - 房间号或令牌
+     */
+    constructor(token: Token);
+    /**
+     * 直播客户端
+     * @constructor
+     * @param {Token} token - 房间号或令牌
      * @param {boolean} enableLog - 记录日志，通过 console.log
      */
-    constructor(roomId: number, enableLog?: boolean);
+    constructor(token: Token, enableLog?: boolean);
     /**
      * 直播客户端
      * @constructor
-     * @param {number} roomId - 房间号
+     * @param {Token} token - 房间号或令牌
      * @param {boolean} enableLog - 记录日志，通过 console.log
      * @param {number} maxConnectTimes - 最多重试次数，默认为 10
      */
-    constructor(roomId: number, enableLog?: boolean, maxConnectTimes?: number);
+    constructor(token: Token, enableLog?: boolean, maxConnectTimes?: number);
     /**
      * 直播客户端
      * @constructor
-     * @param {number} roomId - 房间号
+     * @param {Token} token - 房间号或令牌
      * @param {boolean} enableLog - 记录日志，通过 console.log
      * @param {number} maxConnectTimes - 最多重试次数，默认为 10
      * @param {number} delay - 重试间隔，默认为 15000
      */
-    constructor(roomId: number, enableLog?: boolean, maxConnectTimes?: number, delay?: number);
+    constructor(token: Token, enableLog?: boolean, maxConnectTimes?: number, delay?: number);
     private connect;
     private messageReceived;
     /**

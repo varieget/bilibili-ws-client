@@ -124,20 +124,31 @@ const sub = new Client(roomId);
 
 ## 配置
 
-- **[`roomId`](#roomId)**
+- **[`token`](#token)**
 - **[`enableLog`](#enableLog)**
 - **[`maxConnectTimes`](#maxConnectTimes)**
 - **[`delay`](#delay)**
 
-### `roomId`
+### `token`
 
 Type:
 
 ```ts
-type roomId = number;
+type Token =
+  | number // roomId
+  | Partial<{
+      uid: number;
+      roomid: number; // roomId
+      protover: Ver; // 1 | 2 | 3
+      buvid: string;
+      platform: string; // 'web'
+      clientver: string;
+      type: number;
+      key: string;
+    }>;
 ```
 
-需要连接的房间号。
+需要连接的房间号或一个包含登录信息的对象。
 
 ### `enableLog`
 

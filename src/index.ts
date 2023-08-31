@@ -3,11 +3,11 @@ import zlib from 'zlib';
 import { Buffer } from 'buffer';
 
 import { headerOffset, verOffset } from './constants';
-import type { Ver, Op } from './constants';
+import type { Token, Ver, Op } from './constants';
 import SubClient from './subClient';
 
 interface Options {
-  roomId: number;
+  token: Token;
   enableLog?: boolean;
 }
 
@@ -118,58 +118,65 @@ class Client extends SubClient {
   /**
    * 直播客户端
    * @constructor
-   * @param {number} roomId - 房间号
+   * @param {Token} token - 房间号或令牌
    */
-  constructor(roomId: number);
+  constructor(token: Token);
 
   /**
    * 直播客户端
    * @constructor
-   * @param {number} roomId - 房间号
+   * @param {Token} token - 房间号或令牌
+   */
+  constructor(token: Token);
+
+  /**
+   * 直播客户端
+   * @constructor
+   * @param {Token} token - 房间号或令牌
    * @param {boolean} enableLog - 记录日志，通过 console.log
    */
-  constructor(roomId: number, enableLog?: boolean);
+  constructor(token: Token, enableLog?: boolean);
 
   /**
    * 直播客户端
    * @constructor
-   * @param {number} roomId - 房间号
+   * @param {Token} token - 房间号或令牌
    * @param {boolean} enableLog - 记录日志，通过 console.log
    * @param {number} maxConnectTimes - 最多重试次数，默认为 10
    */
-  constructor(roomId: number, enableLog?: boolean, maxConnectTimes?: number);
+  constructor(token: Token, enableLog?: boolean, maxConnectTimes?: number);
 
   /**
    * 直播客户端
    * @constructor
-   * @param {number} roomId - 房间号
+   * @param {Token} token - 房间号或令牌
    * @param {boolean} enableLog - 记录日志，通过 console.log
    * @param {number} maxConnectTimes - 最多重试次数，默认为 10
    * @param {number} delay - 重试间隔，默认为 15000
    */
   constructor(
-    roomId: number,
+    token: Token,
     enableLog?: boolean,
     maxConnectTimes?: number,
     delay?: number
   );
 
   constructor(
-    roomId: number,
+    token: Token,
     enableLog?: boolean,
     maxConnectTimes?: number,
     delay?: number
   ) {
     super();
 
-    if (!roomId) {
-      throw new Error('miss roomId.');
+    if (!token) {
+      throw new Error('miss token.');
     }
 
     const MAX_CONNECT_TIMES = maxConnectTimes ?? 10; // 最多重试次数
     const DELAY = delay ?? 15000; // 重试间隔
 
-    this.options = { roomId, enableLog };
+    this.options = { token, enableLog };
 
     this.connect(MAX_CONNECT_TIMES, DELAY);
   }
@@ -180,16 +187,20 @@ class Client extends SubClient {
     this.ws = new WebSocket('wss://broadcastlv.chat.bilibili.com:2245/sub');
     this.ws.binaryType = 'arraybuffer';
 
-    const { roomId, enableLog } = this.options;
+    const { token: roomId, enableLog } = this.options;
 
     this.ws.onopen = () => {
       enableLog && console.log('auth start');
 
-      const token = JSON.stringify({
-        roomid: roomId,
-        protover: 2,
-        platform: 'web',
-      });
+      const token = JSON.stringify(
+        typeof roomId === 'number'
+          ? {
+              roomid: roomId,
+              protover: 2,
+              platform: 'web',
+            }
+          : roomId // token
+      );
 
       this.ws?.send(this.convertToArrayBuffer(token, 7));
     };
@@ -255,6 +266,14 @@ class Client extends SubClient {
                   offset + packetLen
                 );
                 const bufBody = zlib.inflateSync(Buffer.from(msgBody));
+
+                body = this.convertToObject(bufBody.buffer).body as string;
+              } else if (ver === 3) {
+                const msgBody = data.slice(
+                  offset + headerLen,
+                  offset + packetLen
+                );
+                const bufBody = zlib.brotliDecompressSync(Buffer.from(msgBody));
 
                 body = this.convertToObject(bufBody.buffer).body as string;
               } else {

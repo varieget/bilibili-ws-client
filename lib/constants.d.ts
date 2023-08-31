@@ -4,5 +4,15 @@ export declare const rawHeaderLen = 16;
 export declare const verOffset = 6;
 export declare const opOffset = 8;
 export declare const seqOffset = 12;
-export declare type Ver = 1 | 2;
+export declare type Ver = 1 | 2 | 3;
 export declare type Op = 2 | 3 | 5 | 7 | 8;
+export declare type Token = number | Partial<{
+    uid: number;
+    roomid: number;
+    protover: Ver;
+    buvid: string;
+    platform: string;
+    clientver: string;
+    type: number;
+    key: string;
+}>;
