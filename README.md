@@ -1,6 +1,6 @@
 # bilibili-ws-client
 
-适用于 Bilibili 直播的 `Websocket` 客户端。
+适用于 Bilibili 直播的 `WebSocket` 客户端。
 
 可用于实时获取弹幕 `DANMU_MSG`、收到礼物 `SEND_GIFT`、开播 `LIVE`、下播 `PREPARING` 等信息。
 
@@ -10,7 +10,7 @@
 
 也支持从 HTML 文件和 script 标签开始。
 
-### 在网页中添加 `bilibili-ws-client`
+### 在网页中直接使用
 
 将 js 添加到 HTML 中，且无需安装，即可立即开始使用。
 
@@ -50,7 +50,7 @@
 </script>
 ```
 
-### 通过以下方式安装 `bilibili-ws-client`
+### 通过以下方式安装
 
 ```bash
 npm install bilibili-ws-client
