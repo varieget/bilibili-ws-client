@@ -22,7 +22,7 @@ export default defineConfig([
         format: 'esm',
       },
     ],
-    external: ['ws'],
+    external: ['ws', 'isomorphic-ws'],
     plugins: [
       eslint(),
       commonjs(),
@@ -39,9 +39,10 @@ export default defineConfig([
       plugins: [terser()],
       globals: {
         ws: 'WebSocket',
+        'isomorphic-ws': 'WebSocket',
       },
     },
-    external: ['ws'],
+    external: ['ws', 'isomorphic-ws'],
     plugins: [
       eslint(),
       nodePolyfills(),
