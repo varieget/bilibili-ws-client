@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import WebSocket from 'isomorphic-ws';
 import zlib from 'zlib';
 import { Buffer } from 'buffer';
 

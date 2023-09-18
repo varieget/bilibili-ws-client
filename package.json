@@ -31,6 +31,7 @@
   "homepage": "https://github.com/varieget/bilibili-ws-client#readme",
   "dependencies": {
     "@types/ws": "^8.5.3",
+    "isomorphic-ws": "^5.0.0",
     "ws": "^8.5.0"
   },
   "devDependencies": {
