@@ -10,66 +10,38 @@
 
 也支持从 HTML 文件和 script 标签开始。
 
-### 在网页中直接使用
-
-将 js 添加到 HTML 中，且无需安装，即可立即开始使用。
-
-添加 script 标签，应该如下所示：
-
-```html
-<script src="https://unpkg.com/bilibili-ws-client/lib/index.umd.js"></script>
-<script>
-  const sub = new Client(1);
-
-  sub.on('open', () => {
-    // ...
-    console.log('authorized');
-  });
-
-  sub.on('message', ({ ver, op, cmd, body, ts }) => {
-    if (op === 3) {
-      console.log('online: ' + body);
-    } else if (op === 5) {
-      switch (cmd) {
-        case 'LIVE':
-          // 开播
-          // ...
-          break;
-        case 'PREPARING':
-          // 闲置（下播）
-          // ...
-          break;
-        case 'DANMU_MSG':
-          console.log(body);
-          break;
-        default:
-          break;
-      }
-    }
-  });
-</script>
-```
-
 ### 通过以下方式安装
 
 ```bash
 npm install bilibili-ws-client
 ```
 
-或者
-
-```bash
-yarn add bilibili-ws-client
-```
-
 ### 在 node.js 使用
+
+> [!TIP]  
+> `buvid` 通过 https://api.bilibili.com/x/frontend/finger/spi 获取  
+> `key` 通过 https://api.live.bilibili.com/xlive/web-room/v1/index/getDanmuInfo?id=${roomId} 获取
+
+作为 `ESM` 模块使用：
+
+```js
+import Client from 'bilibili-ws-client';
+```
 
 作为 `CommonJS` 模块使用：
 
 ```js
 const Client = require('bilibili-ws-client');
 
-const sub = new Client(roomId);
+const sub = new Client({
+  uid: 0, // 留空或为 0 代表访客，无法显示弹幕发送用户
+  roomid: 1,
+  protover: 3,
+  buvid: '', // b_3
+  platform: 'web',
+  type: 2,
+  key: '', // token
+});
 
 sub.on('open', () => {
   // ...
@@ -120,6 +92,46 @@ import Client from 'bilibili-ws-client';
 
 const sub = new Client(roomId);
 // ...
+```
+
+### 在网页中直接使用
+
+将 js 添加到 HTML 中，且无需安装，即可立即开始使用。
+
+添加 script 标签，应该如下所示：
+
+```html
+<script src="https://unpkg.com/bilibili-ws-client/lib/index.umd.js"></script>
+<script>
+  const sub = new Client(1); // 需要鉴权
+
+  sub.on('open', () => {
+    // ...
+    console.log('authorized');
+  });
+
+  sub.on('message', ({ ver, op, cmd, body, ts }) => {
+    if (op === 3) {
+      console.log('online: ' + body);
+    } else if (op === 5) {
+      switch (cmd) {
+        case 'LIVE':
+          // 开播
+          // ...
+          break;
+        case 'PREPARING':
+          // 闲置（下播）
+          // ...
+          break;
+        case 'DANMU_MSG':
+          console.log(body);
+          break;
+        default:
+          break;
+      }
+    }
+  });
+</script>
 ```
 
 ## 配置
