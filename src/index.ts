@@ -2,9 +2,9 @@ import WebSocket from 'isomorphic-ws';
 import zlib from 'zlib';
 import { Buffer } from 'buffer';
 
-import { headerOffset, verOffset } from './constants';
-import type { Token, Ver, Op } from './constants';
-import SubClient from './subClient';
+import { headerOffset, verOffset } from './constants.ts';
+import type { Token, Ver, Op } from './constants.ts';
+import SubClient from './subClient.ts';
 
 interface Options {
   token: Token;
@@ -190,7 +190,7 @@ class Client extends SubClient {
     const { token: roomId, enableLog } = this.options;
 
     this.ws.onopen = () => {
-      enableLog && console.log('auth start');
+      if (enableLog) console.log('auth start');
 
       const token = JSON.stringify(
         typeof roomId === 'number'
@@ -205,7 +205,7 @@ class Client extends SubClient {
       this.ws?.send(this.convertToArrayBuffer(token, 7));
     };
 
-    let heartbeatInterval: NodeJS.Timer;
+    let heartbeatInterval: NodeJS.Timeout;
 
     this.ws.onmessage = (event) => {
       const { data } = event as { data: ArrayBuffer };
@@ -217,7 +217,7 @@ class Client extends SubClient {
         this.convertToObject(data);
 
       if (op !== 3 && op !== 5) {
-        enableLog &&
+        if (enableLog)
           console.log('receiveHeader:', {
             packetLen,
             headerLen,
@@ -237,13 +237,13 @@ class Client extends SubClient {
           heartbeatInterval = setInterval(() => {
             this.ws?.send(this.convertToArrayBuffer('', 2));
 
-            enableLog && console.log('send: heartbeat;');
+            if (enableLog) console.log('send: heartbeat;');
           }, 30 * 1000);
           break;
         case 3:
           // 人气
           // heartbeat reply
-          enableLog && console.log('receive: heartbeat;', { online: body });
+          if (enableLog) console.log('receive: heartbeat;', { online: body });
 
           this.messageReceived(ver, op, body, ts);
           break;
@@ -267,7 +267,12 @@ class Client extends SubClient {
                 );
                 const bufBody = zlib.inflateSync(Buffer.from(msgBody));
 
-                body = this.convertToObject(bufBody.buffer).body as string;
+                body = this.convertToObject(
+                  bufBody.buffer.slice(
+                    bufBody.byteOffset,
+                    bufBody.byteOffset + bufBody.byteLength
+                  ) as ArrayBuffer
+                ).body as string;
               } else if (ver === 3) {
                 const msgBody = data.slice(
                   offset + headerLen,
@@ -275,7 +280,12 @@ class Client extends SubClient {
                 );
                 const bufBody = zlib.brotliDecompressSync(Buffer.from(msgBody));
 
-                body = this.convertToObject(bufBody.buffer).body as string;
+                body = this.convertToObject(
+                  bufBody.buffer.slice(
+                    bufBody.byteOffset,
+                    bufBody.byteOffset + bufBody.byteLength
+                  ) as ArrayBuffer
+                ).body as string;
               } else {
                 body = this.textDecoder.decode(
                   data.slice(offset + headerLen, offset + packetLen)
@@ -284,10 +294,10 @@ class Client extends SubClient {
 
               this.messageReceived(ver, op, body, ts);
 
-              enableLog && console.log('messageReceived:', { ver, body });
+              if (enableLog) console.log('messageReceived:', { ver, body });
             } catch (e) {
               this.emit('error', e);
-              enableLog && console.error('decode body error:', e);
+              if (enableLog) console.error('decode body error:', e);
             }
           }
 
@@ -296,7 +306,7 @@ class Client extends SubClient {
     };
 
     this.ws.onclose = ({ code }) => {
-      enableLog && console.log('closed');
+      if (enableLog) console.log('closed');
       this.emit('close');
 
       if (heartbeatInterval) {

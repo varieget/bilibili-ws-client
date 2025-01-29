@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 
-import * as constants from './constants';
-import type { Ver, Op } from './constants';
+import * as constants from './constants.ts';
+import type { Ver, Op } from './constants.ts';
 
 type PacketStruct = {
   packetLen?: number;

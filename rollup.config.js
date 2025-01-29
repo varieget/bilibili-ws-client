@@ -1,7 +1,6 @@
 import { defineConfig } from 'rollup';
 import { babel } from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
-import eslint from '@rollup/plugin-eslint';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
@@ -24,7 +23,6 @@ export default defineConfig([
     ],
     external: ['ws', 'isomorphic-ws'],
     plugins: [
-      eslint(),
       commonjs(),
       nodeResolve({ extensions }),
       babel({ extensions, babelHelpers: 'bundled' }),
@@ -44,7 +42,6 @@ export default defineConfig([
     },
     external: ['ws', 'isomorphic-ws'],
     plugins: [
-      eslint(),
       nodePolyfills(),
       nodeResolve({ extensions }),
       babel({ extensions, babelHelpers: 'bundled' }),

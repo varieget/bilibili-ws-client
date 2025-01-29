@@ -1,5 +1,5 @@
-import type { Token, Ver, Op } from './constants';
-import SubClient from './subClient';
+import type { Token, Ver, Op } from './constants.ts';
+import SubClient from './subClient.ts';
 interface Client {
     on(event: 'close', listener: (this: Client) => void): this;
     on(event: 'error', listener: (this: Client, err: Error) => void): this;
