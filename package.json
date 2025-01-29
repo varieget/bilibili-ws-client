@@ -1,6 +1,6 @@
 {
   "name": "bilibili-ws-client",
-  "version": "2.3.1",
+  "version": "3.0.0",
   "description": "A client for the Bilibili Live Websocket.",
   "main": "lib/index.cjs.js",
   "exports": {
