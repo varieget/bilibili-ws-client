@@ -55,6 +55,8 @@ interface Client {
 declare class Client extends SubClient {
     private options;
     private ws?;
+    private MAX_CONNECT_TIMES;
+    private DELAY;
     /**
      * 直播客户端
      * @constructor
@@ -79,7 +81,7 @@ declare class Client extends SubClient {
      * @constructor
      * @param {Token} token - 房间号或令牌
      * @param {boolean} enableLog - 记录日志，通过 console.log
-     * @param {number} maxConnectTimes - 最多重试次数，默认为 10
+     * @param {number} maxConnectTimes - 最多重试次数，达到上限后重置，默认为 6
      */
     constructor(token: Token, enableLog?: boolean, maxConnectTimes?: number);
     /**
@@ -87,8 +89,8 @@ declare class Client extends SubClient {
      * @constructor
      * @param {Token} token - 房间号或令牌
      * @param {boolean} enableLog - 记录日志，通过 console.log
-     * @param {number} maxConnectTimes - 最多重试次数，默认为 10
-     * @param {number} delay - 重试间隔，默认为 15000
+     * @param {number} maxConnectTimes - 最多重试次数，达到上限后重置，默认为 6
+     * @param {number} delay - 重试间隔，默认为 3000
      */
     constructor(token: Token, enableLog?: boolean, maxConnectTimes?: number, delay?: number);
     private connect;

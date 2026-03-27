@@ -115,6 +115,9 @@ class Client extends SubClient {
   private options: Options;
   private ws?: WebSocket;
 
+  private MAX_CONNECT_TIMES: number;
+  private DELAY: number;
+
   /**
    * 直播客户端
    * @constructor
@@ -142,7 +145,7 @@ class Client extends SubClient {
    * @constructor
    * @param {Token} token - 房间号或令牌
    * @param {boolean} enableLog - 记录日志，通过 console.log
-   * @param {number} maxConnectTimes - 最多重试次数，默认为 10
+   * @param {number} maxConnectTimes - 最多重试次数，达到上限后重置，默认为 6
    */
   constructor(token: Token, enableLog?: boolean, maxConnectTimes?: number);
 
@@ -151,8 +154,8 @@ class Client extends SubClient {
    * @constructor
    * @param {Token} token - 房间号或令牌
    * @param {boolean} enableLog - 记录日志，通过 console.log
-   * @param {number} maxConnectTimes - 最多重试次数，默认为 10
-   * @param {number} delay - 重试间隔，默认为 15000
+   * @param {number} maxConnectTimes - 最多重试次数，达到上限后重置，默认为 6
+   * @param {number} delay - 重试间隔，默认为 3000
    */
   constructor(
     token: Token,
@@ -173,12 +176,12 @@ class Client extends SubClient {
       throw new Error('miss token.');
     }
 
-    const MAX_CONNECT_TIMES = maxConnectTimes ?? 10; // 最多重试次数
-    const DELAY = delay ?? 15000; // 重试间隔
+    this.MAX_CONNECT_TIMES = maxConnectTimes ?? 6; // 最多重试次数
+    this.DELAY = delay ?? 3000; // 重试间隔
 
     this.options = { token, enableLog };
 
-    this.connect(MAX_CONNECT_TIMES, DELAY);
+    this.connect(this.MAX_CONNECT_TIMES, this.DELAY);
   }
 
   private connect(max: number, delay: number) {
@@ -320,7 +323,18 @@ class Client extends SubClient {
       this.emit('error', e);
     };
 
-    const reConnect = () => this.connect(--max, delay * 2);
+    const reConnect = () => {
+      if (--max === 0) {
+        if (enableLog) console.log('maxConnectTimes reached, reset delay.');
+
+        max = this.MAX_CONNECT_TIMES;
+        delay = this.DELAY;
+      }
+
+      if (enableLog) console.log('reConnect:', { max, delay });
+
+      this.connect(max, delay * 2);
+    };
   }
 
   private messageReceived(ver: Ver, op: Op, body: string | number, ts: number) {

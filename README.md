@@ -8,8 +8,6 @@
 
 `bilibili-ws-client` 支持以 `CommonJS` 或 `ESM` 的方式使用。
 
-也支持从 HTML 文件和 script 标签开始。
-
 ### 通过以下方式安装
 
 ```bash
@@ -94,46 +92,6 @@ const sub = new Client(roomId);
 // ...
 ```
 
-### 在网页中直接使用
-
-将 js 添加到 HTML 中，且无需安装，即可立即开始使用。
-
-添加 script 标签，应该如下所示：
-
-```html
-<script src="https://unpkg.com/bilibili-ws-client/lib/index.umd.js"></script>
-<script>
-  const sub = new Client(1); // 需要鉴权
-
-  sub.on('open', () => {
-    // ...
-    console.log('authorized');
-  });
-
-  sub.on('message', ({ ver, op, cmd, body, ts }) => {
-    if (op === 3) {
-      console.log('online: ' + body);
-    } else if (op === 5) {
-      switch (cmd) {
-        case 'LIVE':
-          // 开播
-          // ...
-          break;
-        case 'PREPARING':
-          // 闲置（下播）
-          // ...
-          break;
-        case 'DANMU_MSG':
-          console.log(body);
-          break;
-        default:
-          break;
-      }
-    }
-  });
-</script>
-```
-
 ## 配置
 
 - **[`token`](#token)**
@@ -182,9 +140,9 @@ Type:
 type maxConnectTimes = number | undefined;
 ```
 
-默认值：`10`
+默认值：`6`
 
-当 `WebSocket` 触发 `close` 时，最多重试再次连接的次数。
+当 `WebSocket` 触发 `close` 时，最多重试再次连接的次数，达到上限后将重置延时。
 
 ### `delay`
 
@@ -194,9 +152,9 @@ Type:
 type delay = number | undefined;
 ```
 
-默认值：`15000`
+默认值：`3000`
 
-当 `WebSocket` 触发 `close` 时，间隔特定毫秒后重试。
+当 `WebSocket` 触发 `close` 时，间隔特定毫秒后重试，每次触发后 \* 2，达到 `maxConnectTimes` 上限将重置。
 
 ## 开发
 
