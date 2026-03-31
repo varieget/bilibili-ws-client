@@ -185,8 +185,6 @@ class Client extends SubClient {
   }
 
   private connect(max: number, delay: number) {
-    if (max === 0) throw new Error('maxConnectTimes should not equal 0.');
-
     this.ws = new WebSocket('wss://broadcastlv.chat.bilibili.com:2245/sub');
     this.ws.binaryType = 'arraybuffer';
 
@@ -316,7 +314,7 @@ class Client extends SubClient {
         clearInterval(heartbeatInterval);
       }
 
-      if (code !== 1000) setTimeout(reConnect, delay);
+      if (code !== 1000 && !!max) setTimeout(reConnect, delay);
     };
 
     this.ws.onerror = (e) => {
@@ -327,7 +325,7 @@ class Client extends SubClient {
       if (--max === 0) {
         if (enableLog) console.log('maxConnectTimes reached, reset delay.');
 
-        max = this.MAX_CONNECT_TIMES;
+        max = this.MAX_CONNECT_TIMES - 1;
         delay = this.DELAY;
       }
 

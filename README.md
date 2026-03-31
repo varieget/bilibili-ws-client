@@ -144,6 +144,8 @@ type maxConnectTimes = number | undefined;
 
 当 `WebSocket` 触发 `close` 时，最多重试再次连接的次数，达到上限后将重置延时。
 
+设置为 0 以禁用自动重试。
+
 ### `delay`
 
 Type:
