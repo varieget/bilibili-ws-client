@@ -15,4 +15,5 @@ export type Token = number | Partial<{
     clientver: string;
     type: number;
     key: string;
+    [x: string]: string | number;
 }>;

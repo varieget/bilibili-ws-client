@@ -19,4 +19,5 @@ export type Token =
       clientver: string;
       type: number;
       key: string;
+      [x: string]: string | number;
     }>;
