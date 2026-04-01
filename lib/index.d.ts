@@ -1,4 +1,4 @@
-import type { Token, Ver, Op } from './constants.ts';
+import type { Token, LoggerOption, Ver, Op } from './constants.ts';
 import SubClient from './subClient.ts';
 interface Client {
     on(event: 'close', listener: (this: Client) => void): this;
@@ -55,6 +55,7 @@ interface Client {
 declare class Client extends SubClient {
     private options;
     private ws?;
+    private log;
     private MAX_CONNECT_TIMES;
     private DELAY;
     /**
@@ -73,26 +74,26 @@ declare class Client extends SubClient {
      * 直播客户端
      * @constructor
      * @param {Token} token - 房间号或令牌
-     * @param {boolean} enableLog - 记录日志，通过 console.log
+     * @param {LoggerOption} logger - 记录日志
      */
-    constructor(token: Token, enableLog?: boolean);
+    constructor(token: Token, logger?: LoggerOption);
     /**
      * 直播客户端
      * @constructor
      * @param {Token} token - 房间号或令牌
-     * @param {boolean} enableLog - 记录日志，通过 console.log
+     * @param {LoggerOption} logger - 记录日志
      * @param {number} maxConnectTimes - 最多重试次数，达到上限后重置，默认为 6
      */
-    constructor(token: Token, enableLog?: boolean, maxConnectTimes?: number);
+    constructor(token: Token, logger?: LoggerOption, maxConnectTimes?: number);
     /**
      * 直播客户端
      * @constructor
      * @param {Token} token - 房间号或令牌
-     * @param {boolean} enableLog - 记录日志，通过 console.log
+     * @param {LoggerOption} logger - 记录日志
      * @param {number} maxConnectTimes - 最多重试次数，达到上限后重置，默认为 6
      * @param {number} delay - 重试间隔，默认为 3000
      */
-    constructor(token: Token, enableLog?: boolean, maxConnectTimes?: number, delay?: number);
+    constructor(token: Token, logger?: LoggerOption, maxConnectTimes?: number, delay?: number);
     private connect;
     private messageReceived;
     /**

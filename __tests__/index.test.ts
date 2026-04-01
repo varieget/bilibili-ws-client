@@ -6,6 +6,14 @@ describe('Client', () => {
     expect(() => new Client()).toThrow();
   });
 
+  it('should accept custom logger', (done) => {
+    const sub = new Client(1, () => {
+      sub.close();
+    });
+
+    sub.on('close', () => done());
+  });
+
   it('should receive op 8', (done) => {
     const sub = new Client(1);
 

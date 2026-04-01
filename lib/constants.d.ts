@@ -17,3 +17,5 @@ export type Token = number | Partial<{
     key: string;
     [x: string]: string | number;
 }>;
+export type LoggerFn = (...args: unknown[]) => void;
+export type LoggerOption = boolean | LoggerFn;

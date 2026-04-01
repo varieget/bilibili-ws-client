@@ -3,12 +3,12 @@ import zlib from 'zlib';
 import { Buffer } from 'buffer';
 
 import { headerOffset, verOffset } from './constants.ts';
-import type { Token, Ver, Op } from './constants.ts';
+import type { Token, LoggerFn, LoggerOption, Ver, Op } from './constants.ts';
 import SubClient from './subClient.ts';
 
 interface Options {
   token: Token;
-  enableLog?: boolean;
+  logger?: LoggerOption;
 }
 
 interface Client {
@@ -115,6 +115,8 @@ class Client extends SubClient {
   private options: Options;
   private ws?: WebSocket;
 
+  private log: LoggerFn;
+
   private MAX_CONNECT_TIMES: number;
   private DELAY: number;
 
@@ -136,37 +138,37 @@ class Client extends SubClient {
    * 直播客户端
    * @constructor
    * @param {Token} token - 房间号或令牌
-   * @param {boolean} enableLog - 记录日志，通过 console.log
+   * @param {LoggerOption} logger - 记录日志
    */
-  constructor(token: Token, enableLog?: boolean);
+  constructor(token: Token, logger?: LoggerOption);
 
   /**
    * 直播客户端
    * @constructor
    * @param {Token} token - 房间号或令牌
-   * @param {boolean} enableLog - 记录日志，通过 console.log
+   * @param {LoggerOption} logger - 记录日志
    * @param {number} maxConnectTimes - 最多重试次数，达到上限后重置，默认为 6
    */
-  constructor(token: Token, enableLog?: boolean, maxConnectTimes?: number);
+  constructor(token: Token, logger?: LoggerOption, maxConnectTimes?: number);
 
   /**
    * 直播客户端
    * @constructor
    * @param {Token} token - 房间号或令牌
-   * @param {boolean} enableLog - 记录日志，通过 console.log
+   * @param {LoggerOption} logger - 记录日志
    * @param {number} maxConnectTimes - 最多重试次数，达到上限后重置，默认为 6
    * @param {number} delay - 重试间隔，默认为 3000
    */
   constructor(
     token: Token,
-    enableLog?: boolean,
+    logger?: LoggerOption,
     maxConnectTimes?: number,
     delay?: number
   );
 
   constructor(
     token: Token,
-    enableLog?: boolean,
+    logger?: LoggerOption,
     maxConnectTimes?: number,
     delay?: number
   ) {
@@ -179,7 +181,14 @@ class Client extends SubClient {
     this.MAX_CONNECT_TIMES = maxConnectTimes ?? 6; // 最多重试次数
     this.DELAY = delay ?? 3000; // 重试间隔
 
-    this.options = { token, enableLog };
+    this.options = { token, logger };
+    if (typeof logger === 'function') {
+      this.log = logger.bind(this);
+    } else if (logger) {
+      this.log = console.log.bind(console);
+    } else {
+      this.log = () => {};
+    }
 
     this.connect(this.MAX_CONNECT_TIMES, this.DELAY);
   }
@@ -188,10 +197,10 @@ class Client extends SubClient {
     this.ws = new WebSocket('wss://broadcastlv.chat.bilibili.com:2245/sub');
     this.ws.binaryType = 'arraybuffer';
 
-    const { token: roomId, enableLog } = this.options;
+    const { token: roomId } = this.options;
 
     this.ws.onopen = () => {
-      if (enableLog) console.log('auth start');
+      this.log('auth start');
 
       const token = JSON.stringify(
         typeof roomId === 'number'
@@ -218,15 +227,14 @@ class Client extends SubClient {
         this.convertToObject(data);
 
       if (op !== 3 && op !== 5) {
-        if (enableLog)
-          console.log('receiveHeader:', {
-            packetLen,
-            headerLen,
-            ver,
-            op,
-            seq,
-            body,
-          });
+        this.log('receiveHeader:', {
+          packetLen,
+          headerLen,
+          ver,
+          op,
+          seq,
+          body,
+        });
       }
 
       switch (op) {
@@ -238,13 +246,13 @@ class Client extends SubClient {
           heartbeatInterval = setInterval(() => {
             this.ws?.send(this.convertToArrayBuffer('', 2));
 
-            if (enableLog) console.log('send: heartbeat;');
+            this.log('send: heartbeat;');
           }, 30 * 1000);
           break;
         case 3:
           // 人气
           // heartbeat reply
-          if (enableLog) console.log('receive: heartbeat;', { online: body });
+          this.log('receive: heartbeat;', { online: body });
 
           this.messageReceived(ver, op, body, ts);
           break;
@@ -295,10 +303,10 @@ class Client extends SubClient {
 
               this.messageReceived(ver, op, body, ts);
 
-              if (enableLog) console.log('messageReceived:', { ver, body });
+              this.log('messageReceived:', { ver, body });
             } catch (e) {
               this.emit('error', e);
-              if (enableLog) console.error('decode body error:', e);
+              this.log('decode body error:', e);
             }
           }
 
@@ -307,7 +315,7 @@ class Client extends SubClient {
     };
 
     this.ws.onclose = ({ code }) => {
-      if (enableLog) console.log('closed');
+      this.log('closed');
       this.emit('close');
 
       if (heartbeatInterval) {
@@ -323,13 +331,13 @@ class Client extends SubClient {
 
     const reConnect = () => {
       if (--max === 0) {
-        if (enableLog) console.log('maxConnectTimes reached, reset delay.');
+        this.log('maxConnectTimes reached, reset delay.');
 
         max = this.MAX_CONNECT_TIMES - 1;
         delay = this.DELAY;
       }
 
-      if (enableLog) console.log('reConnect:', { max, delay });
+      this.log('reConnect:', { max, delay });
 
       this.connect(max, delay * 2);
     };

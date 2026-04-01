@@ -95,7 +95,7 @@ const sub = new Client(roomId);
 ## 配置
 
 - **[`token`](#token)**
-- **[`enableLog`](#enableLog)**
+- **[`logger`](#logger)**
 - **[`maxConnectTimes`](#maxConnectTimes)**
 - **[`delay`](#delay)**
 
@@ -120,17 +120,17 @@ type Token =
 
 需要连接的房间号或一个包含登录信息的对象。
 
-### `enableLog`
+### `logger`
 
 Type:
 
 ```ts
-type enableLog = boolean | undefined;
+type logger = boolean | LoggerFn | undefined;
 ```
 
 默认值：`false`
 
-是否记录日志，将通过 `console.log` 输出。
+是否记录日志，默认通过 `console.log` 输出，支持传递自定义函数。
 
 ### `maxConnectTimes`
 
